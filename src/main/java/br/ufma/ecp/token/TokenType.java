@@ -6,6 +6,7 @@ public enum TokenType {
      // literals
      NUMBER,
      STRING,
+     IDENT,
 
      // symbols
      LPAREN('('), RPAREN(')'),
@@ -15,8 +16,6 @@ public enum TokenType {
      PLUS('+'), MINUS('-'), ASTERISK('*'), SLASH('/'),
      AND('&'), OR('|'), NOT('~'),
      LT('<'), GT('>'), EQ('='),
-
-     IDENT,
 
      // keywords
      METHOD,
