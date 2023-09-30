@@ -46,7 +46,6 @@ public class Scanner {
     
 
     public Token nextToken () {
-
         skipWhitespace();
 
         start = current;
@@ -60,21 +59,21 @@ public class Scanner {
             return identifier();
         }
 
-        switch (ch) {
-            case '+':
-                advance();
-                return new Token (PLUS,"+");
-            case '-':
-                advance();
-                return new Token (MINUS,"-");
-            case '"':
-                return string();
-            case 0:
-                return new Token (EOF,"EOF");
-            default:
-                advance();
-                return new Token(ILLEGAL, Character.toString(ch));
+        if (ch == '"') {
+            return string();
         }
+
+        if (ch == 0) {
+            return new Token(EOF, "EOF");
+        }
+
+        for (TokenType token : TokenType.values()) {
+            if (token.getType() != null && ch == (char) token.getType()) {
+                advance();
+                return new Token(token, token.getType().toString());
+            }
+        }
+        return new Token(ILLEGAL, Character.toString(ch));
     }
 
     private Token identifier() {

@@ -3,16 +3,21 @@ package br.ufma.ecp.token;
 import java.util.List;
 
 public enum TokenType {
-     PLUS, MINUS,
-
-     // Literals.
+     // literals
      NUMBER,
      STRING,
 
+     // symbols
+     LPAREN('('), RPAREN(')'),
+     LBRACE('{'), RBRACE('}'),
+     LBRACKET('['), RBRACKET(']'),
+     COMMA(','), SEMICOLON(';'), DOT('.'),
+     PLUS('+'), MINUS('-'), ASTERISK('*'), SLASH('/'),
+     AND('&'), OR('|'), NOT('~'),
+     LT('<'), GT('>'), EQ('='),
 
      IDENT,
 
- 
      // keywords
      METHOD,
      WHILE,
@@ -39,6 +44,21 @@ public enum TokenType {
      EOF,
 
      ILLEGAL;
+
+     Character type;
+
+     TokenType() {}
+
+     TokenType(char c) {
+          type = c;
+     }
+
+     public Object getType() {
+          if (type != null) {
+               return type;
+          }
+          return null;
+     }
 
      static public boolean isSymbol (char c) {
         String symbols = "{}()[].,;+-*/&|<>=~";
