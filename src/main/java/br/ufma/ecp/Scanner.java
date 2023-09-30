@@ -3,7 +3,6 @@ package br.ufma.ecp;
 import static br.ufma.ecp.token.TokenType.*;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,6 +14,7 @@ public class Scanner {
     private final byte[] input;
     private int current;
     private int start;
+    private int line = 1;
 
     private static final Map<String, TokenType> keywords;
  
@@ -72,7 +72,7 @@ public class Scanner {
         String id = new String(input, start, current-start, StandardCharsets.UTF_8)  ;
         TokenType type = keywords.get(id);
         if (type == null) type = IDENT;
-        return new Token(type, id);
+        return new Token(type, id, line);
     }
 
     private Token number() {
@@ -81,7 +81,7 @@ public class Scanner {
         }
 
         String num = new String(input, start, current-start, StandardCharsets.UTF_8)  ;
-        return new Token(NUMBER, num);
+        return new Token(NUMBER, num, line);
     }
 
     private Token string () {
@@ -91,7 +91,7 @@ public class Scanner {
             advance();
         }
         String s = new String(input, start, current-start, StandardCharsets.UTF_8);
-        Token token = new Token (TokenType.STRING,s);
+        Token token = new Token (TokenType.STRING,s, line);
         advance();
         return token;
     }
@@ -100,6 +100,10 @@ public class Scanner {
     private void skipWhitespace() {
         char ch = peek();
         while (ch == ' ' || ch == '\r' || ch == '\t' || ch == '\n') {
+            if (ch == '\n') {
+                line++;
+            }
+
             advance();
             ch = peek();
         }
@@ -110,6 +114,7 @@ public class Scanner {
             advance();
         }
         if (peek() == '\n') {
+            line++;
             advance();
         }
     }
@@ -120,6 +125,10 @@ public class Scanner {
 
         while (!endComment) {
             char ch = peek();
+
+            if (ch == '\n') {
+                line++;
+            }
 
             if (ch == 0) {
                 System.exit(1);
@@ -158,7 +167,7 @@ public class Scanner {
         }
 
         if (ch == 0) {
-            return new Token(EOF, "EOF");
+            return new Token(EOF, "EOF", line);
         }
 
         for (TokenType token : TokenType.values()) {
@@ -176,9 +185,9 @@ public class Scanner {
                 }
 
                 advance();
-                return new Token(token, token.getType().toString());
+                return new Token(token, token.getType().toString(), line);
             }
         }
-        return new Token(ILLEGAL, Character.toString(ch));
+        return new Token(ILLEGAL, Character.toString(ch), line);
     }
 }

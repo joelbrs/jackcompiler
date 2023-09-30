@@ -19,7 +19,7 @@ public class ScannerTest extends TestSupport {
     public void testSimple () {
         String input = "45  + if + \"ola mundo\" - 876";
         Scanner scan = new Scanner (input.getBytes());
-        for (Token tk = scan.nextToken(); tk.type != TokenType.EOF; tk = scan.nextToken()) {
+        for (Token tk = scan.nextToken(); tk.getType() != TokenType.EOF; tk = scan.nextToken()) {
             System.out.println(tk);
         }
     }
@@ -34,7 +34,7 @@ public class ScannerTest extends TestSupport {
         
         result.append("<tokens>\r\n");
 
-        for (Token tk = scanner.nextToken(); tk.type !=TokenType.EOF; tk = scanner.nextToken()) {
+        for (Token tk = scanner.nextToken(); tk.getType() !=TokenType.EOF; tk = scanner.nextToken()) {
             result.append(String.format("%s\r\n",tk.toString()));
         }
 
@@ -54,7 +54,7 @@ public class ScannerTest extends TestSupport {
         
         result.append("<tokens>\r\n");
 
-        for (Token tk = scanner.nextToken(); tk.type !=TokenType.EOF; tk = scanner.nextToken()) {
+        for (Token tk = scanner.nextToken(); tk.getType() !=TokenType.EOF; tk = scanner.nextToken()) {
             result.append(String.format("%s\r\n",tk.toString()));
         }
         

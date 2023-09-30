@@ -23,7 +23,7 @@ public class Parser {
     }
 
     void number () {
-        System.out.println(currentToken.lexeme);
+        System.out.println(currentToken.getLexeme());
         match(TokenType.NUMBER);
     }
 
@@ -32,7 +32,7 @@ public class Parser {
     }
 
    private void match(TokenType t) {
-        if (currentToken.type == t) {
+        if (currentToken.getType() == t) {
             nextToken();
         }else {
             throw new Error("syntax error");
@@ -40,17 +40,17 @@ public class Parser {
    }
 
     void oper () {
-        if (currentToken.type == TokenType.PLUS) {
+        if (currentToken.getType() == TokenType.PLUS) {
             match(TokenType.PLUS);
             number();
             System.out.println("add");
             oper();
-        } else if (currentToken.type == TokenType.MINUS) {
+        } else if (currentToken.getType() == TokenType.MINUS) {
             match(TokenType.MINUS);
             number();
             System.out.println("sub");
             oper();
-        } else if (currentToken.type == TokenType.EOF) {
+        } else if (currentToken.getType() == TokenType.EOF) {
             // vazio
         } else {
             throw new Error("syntax error");

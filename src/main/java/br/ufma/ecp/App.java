@@ -24,7 +24,7 @@ public class App
                       
                       """;
         Scanner scan = new Scanner (input.getBytes());
-        for (Token tk = scan.nextToken(); tk.type != EOF; tk = scan.nextToken()) {
+        for (Token tk = scan.nextToken(); tk.getType() != EOF; tk = scan.nextToken()) {
             System.out.println(tk);
         }
 
