@@ -27,7 +27,7 @@ public class App
         System.out.println("<tokens>");
         Scanner scan = new Scanner (input.getBytes());
         for (Token tk = scan.nextToken(); tk.getType() != EOF; tk = scan.nextToken()) {
-            System.out.println("  " + tk);
+            System.out.println(tk);
         }
         System.out.println("</tokens>");
     }

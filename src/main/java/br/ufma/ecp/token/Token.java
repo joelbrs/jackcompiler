@@ -65,6 +65,6 @@ public class Token {
             category = "keyword";
         }
 
-        return "<" + category + "> " + value + " </" + category + " >";
+        return "<" + category + "> " + value + " </" + category + ">";
     }
 }

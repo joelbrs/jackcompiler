@@ -35,7 +35,7 @@ public class ScannerTest extends TestSupport {
         result.append("<tokens>\r\n");
 
         for (Token tk = scanner.nextToken(); tk.getType() !=TokenType.EOF; tk = scanner.nextToken()) {
-            result.append(String.format("%s\r\n",tk.toString()));
+            result.append(String.format("%s\r\n",tk));
         }
 
         result.append("</tokens>\r\n");
