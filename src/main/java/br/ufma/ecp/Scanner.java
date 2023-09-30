@@ -22,11 +22,11 @@ public class Scanner {
     static {
         keywords = new HashMap<>();
 
-        Arrays.asList(TokenType.values()).forEach(v -> {
-            if (TokenType.isKeyword(v)) {
-                keywords.put(v.toString().toLowerCase(), v);
+        for (TokenType token : TokenType.values()) {
+            if (TokenType.isKeyword(token)) {
+                keywords.put(token.toString().toLowerCase(), token);
             }
-        });
+        }
     }
 
     
