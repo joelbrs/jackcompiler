@@ -21,7 +21,7 @@ public class App
                       comentario em bloco
                       */
                       42 ola
-                      
+                      \" stringConst\"
                       """;
 
         System.out.println("<tokens>");

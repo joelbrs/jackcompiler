@@ -170,8 +170,8 @@ public class Scanner {
         }
 
         for (TokenType token : TokenType.values()) {
-            if (token.getType() != null && ch == (char) token.getType()) {
-                if ((char) token.getType() == '/') {
+            if (token.getType() != null && ch == token.getType().toString().charAt(0)) {
+                if (token.getType().toString().equals("/")) {
                     if (peekNext() == '/') {
                         skipLineComments();
                         return nextToken();

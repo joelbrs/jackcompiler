@@ -13,8 +13,6 @@ import br.ufma.ecp.token.TokenType;
 
 
 public class ScannerTest extends TestSupport {
-
-
     @Test
     public void testSimple () {
         String input = "45  + if + \"ola mundo\" - 876";
@@ -34,7 +32,7 @@ public class ScannerTest extends TestSupport {
         
         result.append("<tokens>\r\n");
 
-        for (Token tk = scanner.nextToken(); tk.getType() !=TokenType.EOF; tk = scanner.nextToken()) {
+        for (Token tk = scanner.nextToken(); tk.getType() != TokenType.EOF; tk = scanner.nextToken()) {
             result.append(String.format("%s\r\n",tk));
         }
 
@@ -62,7 +60,4 @@ public class ScannerTest extends TestSupport {
         System.out.println(result.toString());
         assertEquals(expectedResult, result.toString());
     }
-
-    
-    
 }

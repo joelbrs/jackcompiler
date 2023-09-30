@@ -4,18 +4,18 @@ import java.util.List;
 
 public enum TokenType {
      // literals
-     NUMBER,
-     STRING,
-     IDENT,
+     NUMBER("integerConstant"),
+     STRING("stringConstant"),
+     IDENT("identifier"),
 
      // symbols
-     LPAREN('('), RPAREN(')'),
-     LBRACE('{'), RBRACE('}'),
-     LBRACKET('['), RBRACKET(']'),
-     COMMA(','), SEMICOLON(';'), DOT('.'),
-     PLUS('+'), MINUS('-'), ASTERISK('*'), SLASH('/'),
-     AND('&'), OR('|'), NOT('~'),
-     LT('<'), GT('>'), EQ('='),
+     LPAREN("("), RPAREN(")"),
+     LBRACE("{"), RBRACE("}"),
+     LBRACKET("["), RBRACKET("]"),
+     COMMA(","), SEMICOLON(";"), DOT("."),
+     PLUS("+"), MINUS("-"), ASTERISK("*"), SLASH("/"),
+     AND("&"), OR("|"), NOT("~"),
+     LT("<"), GT(">"), EQ("="),
 
      // keywords
      METHOD,
@@ -44,11 +44,11 @@ public enum TokenType {
 
      ILLEGAL;
 
-     Character type;
+     String type;
 
      TokenType() {}
 
-     TokenType(char c) {
+     TokenType(String c) {
           type = c;
      }
 

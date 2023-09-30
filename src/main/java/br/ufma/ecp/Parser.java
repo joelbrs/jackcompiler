@@ -4,13 +4,12 @@ import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
 
 public class Parser {
-    private Scanner scan;
+    private final Scanner scan;
     private Token currentToken;
     
     public Parser (byte[] input) {
         scan = new Scanner(input);
         currentToken = scan.nextToken();
-        
     }
 
     public void parse () {
@@ -50,8 +49,6 @@ public class Parser {
             number();
             System.out.println("sub");
             oper();
-        } else if (currentToken.getType() == TokenType.EOF) {
-            // vazio
         } else {
             throw new Error("syntax error");
         }
