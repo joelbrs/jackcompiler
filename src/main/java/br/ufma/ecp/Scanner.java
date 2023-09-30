@@ -3,6 +3,7 @@ package br.ufma.ecp;
 import static br.ufma.ecp.token.TokenType.*;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,7 +12,7 @@ import br.ufma.ecp.token.TokenType;
 
 public class Scanner {
 
-    private byte[] input;
+    private final byte[] input;
     private int current;
     private int start;
 
@@ -20,9 +21,12 @@ public class Scanner {
 
     static {
         keywords = new HashMap<>();
-        keywords.put("method",    TokenType.METHOD);
-        keywords.put("while",  TokenType.WHILE);
-        keywords.put("if",   TokenType.IF);
+
+        Arrays.asList(TokenType.values()).forEach(v -> {
+            if (TokenType.isKeyword(v)) {
+                keywords.put(v.toString().toLowerCase(), v);
+            }
+        });
     }
 
     
@@ -87,8 +91,8 @@ public class Scanner {
             advance();
         }
         
-            String num = new String(input, start, current-start, StandardCharsets.UTF_8)  ;
-            return new Token(NUMBER, num);
+        String num = new String(input, start, current-start, StandardCharsets.UTF_8)  ;
+        return new Token(NUMBER, num);
     }
 
     private Token string () {
@@ -126,7 +130,4 @@ public class Scanner {
            return (char)input[current];
        return 0;
     }
-
-
-    
 }
