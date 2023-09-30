@@ -10,14 +10,11 @@ import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
 
 public class Scanner {
-
     private final byte[] input;
     private int current;
     private int start;
     private int line = 1;
-
     private static final Map<String, TokenType> keywords;
- 
 
     static {
         keywords = new HashMap<>();
@@ -36,8 +33,9 @@ public class Scanner {
     }
 
     private char peek () {
-        if (current < input.length)
+        if (current < input.length) {
             return (char)input[current];
+        }
         return 0;
     }
 
@@ -66,6 +64,7 @@ public class Scanner {
     private boolean isAlphaNumeric(char c) {
         return isAlpha(c) || Character.isDigit((c));
     }
+
     private Token identifier() {
         while (isAlphaNumeric(peek())) advance();
 

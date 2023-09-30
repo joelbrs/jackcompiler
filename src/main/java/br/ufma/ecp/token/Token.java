@@ -25,17 +25,46 @@ public class Token {
     }
 
     public String toString() {
-        var type = this.type.toString();
+        var category = type.toString().toLowerCase();
 
-        /**
-        if (TokenType.isSymbol(lexeme.charAt(0)))
-            type = "symbol";
+        var value = lexeme;
 
-        if (TokenType.isKeyword(this.type))
-            type = "keyword";
-        **/
+        if (TokenType.isSymbol(lexeme.charAt(0))) {
+            category = "symbol";
 
-        return "<"+ type +">" + lexeme + "</"+ type + ">";
+            if (value.equals(">")) {
+                value = "&gt;";
+            }
+
+            if (value.equals("<")) {
+                value = "&lt;";
+            }
+
+            if (value.equals("\"")) {
+                value = "&quote";
+            }
+
+            if (value.equals("&")) {
+                value = "&amp;";
+            }
+        }
+
+        if (category.equals(TokenType.NUMBER.toString().toLowerCase())) {
+            category = "integerConstant";
+        }
+
+        if (category.equals(TokenType.IDENT.toString().toLowerCase())) {
+            category = "identifier";
+        }
+
+        if (category.equals(TokenType.STRING.toString().toLowerCase())) {
+            category = "stringConstant";
+        }
+
+        if (TokenType.isKeyword(type)) {
+            category = "keyword";
+        }
+
+        return "<" + category + "> " + value + " </" + category + " >";
     }
-    
 }
