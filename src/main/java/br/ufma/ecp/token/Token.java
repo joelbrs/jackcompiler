@@ -23,10 +23,11 @@ public class Token {
         this.line = line;
     }
 
+    @Override
     public String toString() {
-        var category = type.getType() != null ? type.getType().toString() : type.toString().toLowerCase();
+        String category = type.getType() != null ? type.getType().toString() : type.toString().toLowerCase();
 
-        var value = lexeme;
+        String value = lexeme;
 
         if (TokenType.isKeyword(type)) {
             category = "keyword";
