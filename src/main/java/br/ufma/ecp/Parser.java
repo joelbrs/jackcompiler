@@ -90,13 +90,27 @@ public class Parser {
         expectPeek(TokenType.INT, TokenType.BOOLEAN, TokenType.CHAR, TokenType.IDENT);
         expectPeek(TokenType.IDENT);
 
-        while (currentTokenIs(TokenType.COMMA)) {
+        while (peekTokenIs(TokenType.COMMA)) {
             expectPeek(TokenType.COMMA);
             expectPeek(TokenType.IDENT);
         }
 
         expectPeek(TokenType.SEMICOLON);
         printNonTerminal("/classVarDec");
+    }
+
+    void parseVarDec() {
+        printNonTerminal("varDec");
+        expectPeek(TokenType.VAR);
+        expectPeek(TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
+        expectPeek(TokenType.IDENT);
+
+        while (peekTokenIs(TokenType.COMMA)) {
+            expectPeek(TokenType.COMMA);
+            expectPeek(TokenType.IDENT);
+        }
+        expectPeek(TokenType.SEMICOLON);
+        printNonTerminal("/varDec");
     }
 
     private void expectPeek(TokenType... types) {
@@ -144,7 +158,7 @@ public class Parser {
         }
 
         if (token.getType() != TokenType.EOF) {
-            report(token.getLine(), "at '" + token.getLexeme() + "'", message);
+            report(token.getLine(), " at '" + token.getLexeme() + "'", message);
         }
         return new ParseError();
     }
