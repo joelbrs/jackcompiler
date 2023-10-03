@@ -39,19 +39,17 @@ public class Parser {
     }
 
     void oper () {
-        if (currentToken.getType() == TokenType.PLUS) {
-            match(TokenType.PLUS);
+        if (currentToken.getType() == TokenType.PLUS || currentToken.getType() == TokenType.MINUS) {
+            String operation = currentToken.getType() == TokenType.PLUS ? "add" : "sub";
+
+            match(currentToken.getType());
             number();
-            System.out.println("add");
+            System.out.println(operation);
             oper();
-        } else if (currentToken.getType() == TokenType.MINUS) {
-            match(TokenType.MINUS);
-            number();
-            System.out.println("sub");
-            oper();
-        } else {
-            throw new Error("syntax error");
+            return;
         }
+
+        throw new Error("syntax error");
     }
 
     void parseTerm() {
@@ -149,7 +147,9 @@ public class Parser {
     private ParseError error(Token token, String message) {
         if (token.getType() == TokenType.EOF) {
             report(token.getLine(), "at end", message);
-        } else {
+        }
+
+        if (token.getType() != TokenType.EOF) {
             report(token.getLine(), "at '" + token.getLexeme() + "'", message);
         }
         return new ParseError();
