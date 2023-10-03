@@ -83,6 +83,23 @@ public class Parser {
         printNonTerminal("/letStatement");
     }
 
+    void parseClassVarDec() {
+        printNonTerminal("classVarDec");
+
+        expectPeek(TokenType.STATIC, TokenType.FIELD);
+        expectPeek(TokenType.INT, TokenType.BOOLEAN, TokenType.CHAR, TokenType.IDENT);
+        expectPeek(TokenType.IDENT);
+        expectPeek(TokenType.LPAREN);
+
+        while (currentTokenIs(TokenType.COMMA)) {
+            expectPeek(TokenType.COMMA);
+            expectPeek(TokenType.IDENT);
+        }
+        expectPeek(TokenType.RPAREN);
+        expectPeek(TokenType.SEMICOLON);
+        printNonTerminal("/classVarDec");
+    }
+
     private void expectPeek(TokenType... types) {
         for (TokenType type: types) {
             if (peekToken.getType() == type) {
