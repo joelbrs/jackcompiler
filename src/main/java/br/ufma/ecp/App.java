@@ -6,14 +6,8 @@ import static br.ufma.ecp.token.TokenType.*;
 
 import br.ufma.ecp.token.Token; 
 
-public class App 
-{
-
-    
-    public static void main( String[] args )
-    {
-
-
+public class App {
+    public static void main( String[] args ) {
         String input = """
                       // é um comentario 10
                       45 \"hello\" variavel + while < , if

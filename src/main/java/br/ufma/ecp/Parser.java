@@ -15,6 +15,29 @@ public class Parser {
         nextToken();
     }
 
+    void number () {
+        System.out.println(currentToken.getLexeme());
+        match(TokenType.NUMBER);
+    }
+
+    private void nextToken () {
+        currentToken = peekToken;
+        peekToken = scan.nextToken();
+    }
+
+    private void match(TokenType t) {
+        if (currentToken.getType() == t) {
+            nextToken();
+            return;
+        }
+
+        throw new Error("syntax error");
+    }
+
+    static public boolean isOperator(String op) {
+        return "+=*/<>=~&|".contains(op);
+    }
+
     void oper () {
         if (currentToken.getType() == TokenType.PLUS) {
             match(TokenType.PLUS);
@@ -31,20 +54,57 @@ public class Parser {
         }
     }
 
-    public String XMLOutput() {
-        return xmlOutput.toString();
+    void parseTerm() {
+        printNonTerminal("term");
+        switch (peekToken.getType()) {
+            case NUMBER:
+                expectPeek(TokenType.NUMBER);
+                break;
+            case STRING:
+                expectPeek(TokenType.STRING);
+                break;
+            case FALSE:
+            case NULL:
+            case TRUE:
+                expectPeek(TokenType.FALSE, TokenType.NULL, TokenType.TRUE);
+                break;
+            case THIS:
+                expectPeek(TokenType.THIS);
+                break;
+            case IDENT:
+                expectPeek(TokenType.IDENT);
+                break;
+            default:
+                throw error(peekToken, "term expected");
+        }
+        printNonTerminal("/term");
     }
 
-    private void printNonTerminal(String nterminal) {
-        xmlOutput.append(String.format("<%s>\r\n", nterminal));
+    void parseExpression() {
+        printNonTerminal("expression");
+        parseTerm();
+        while (isOperator(peekToken.getLexeme())) {
+            expectPeek(peekToken.getType());
+            parseTerm();
+        }
+        printNonTerminal("/expression");
     }
 
-    boolean peekTokenIs(TokenType type) {
-        return peekToken.getType() == type;
-    }
+    void parseLet() {
+        printNonTerminal("letStatement");
+        expectPeek(TokenType.LET);
+        expectPeek(TokenType.IDENT);
 
-    boolean currentTokenIs(TokenType type) {
-        return currentToken.getType() == type;
+        if (peekTokenIs(TokenType.LBRACKET)) {
+            expectPeek(TokenType.LBRACKET);
+            parseExpression();
+            expectPeek(TokenType.RBRACKET);
+        }
+
+        expectPeek(TokenType.EQ);
+        parseExpression();
+        expectPeek(TokenType.SEMICOLON);
+        printNonTerminal("/letStatement");
     }
 
     private void expectPeek(TokenType... types) {
@@ -66,6 +126,22 @@ public class Parser {
         throw error(peekToken, "Expected " + type.name());
     }
 
+    public String XMLOutput() {
+        return xmlOutput.toString();
+    }
+
+    private void printNonTerminal(String nterminal) {
+        xmlOutput.append(String.format("<%s>\r\n", nterminal));
+    }
+
+    boolean peekTokenIs(TokenType type) {
+        return peekToken.getType() == type;
+    }
+
+    boolean currentTokenIs(TokenType type) {
+        return currentToken.getType() == type;
+    }
+
     private static void report(int line, String where, String message) {
         System.err.println("[line " + line + " ] Error" + where + ": " + message);
     }
@@ -77,22 +153,5 @@ public class Parser {
             report(token.getLine(), "at '" + token.getLexeme() + "'", message);
         }
         return new ParseError();
-    }
-    void number () {
-        System.out.println(currentToken.getLexeme());
-        match(TokenType.NUMBER);
-    }
-
-    private void nextToken () {
-        currentToken = peekToken;
-        peekToken = scan.nextToken();
-    }
-
-    private void match(TokenType t) {
-        if (currentToken.getType() == t) {
-            nextToken();
-        }else {
-            throw new Error("syntax error");
-        }
     }
 }
