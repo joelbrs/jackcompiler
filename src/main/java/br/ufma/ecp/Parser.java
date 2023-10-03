@@ -1,9 +1,11 @@
 package br.ufma.ecp;
 
+import br.ufma.ecp.interfaces.Statements;
+import br.ufma.ecp.interfaces.SyntacticElements;
 import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
 
-public class Parser {
+public class Parser implements SyntacticElements, Statements {
     private static class ParseError extends RuntimeException {};
     private final Scanner scan;
     private Token currentToken;
@@ -66,7 +68,8 @@ public class Parser {
         printNonTerminal("/expression");
     }
 
-    void parseLet() {
+    @Override
+    public void parseLet() {
         printNonTerminal("letStatement");
         expectPeek(TokenType.LET);
         expectPeek(TokenType.IDENT);
@@ -83,7 +86,28 @@ public class Parser {
         printNonTerminal("/letStatement");
     }
 
-    void parseClassVarDec() {
+    @Override
+    public void parseIf() {
+
+    }
+
+    @Override
+    public void parseWhile() {
+
+    }
+
+    @Override
+    public void parseDo() {
+
+    }
+
+    @Override
+    public void parseReturn() {
+
+    }
+
+    @Override
+    public void parseClassVarDec() {
         printNonTerminal("classVarDec");
 
         expectPeek(TokenType.STATIC, TokenType.FIELD);
@@ -99,7 +123,8 @@ public class Parser {
         printNonTerminal("/classVarDec");
     }
 
-    void parseVarDec() {
+    @Override
+    public void parseVarDec() {
         printNonTerminal("varDec");
         expectPeek(TokenType.VAR);
         expectPeek(TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
