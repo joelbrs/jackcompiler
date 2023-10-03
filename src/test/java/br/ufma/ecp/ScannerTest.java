@@ -160,4 +160,23 @@ public class ScannerTest extends TestSupport {
         result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
         assertEquals(expectedResult, result);
     }
+
+    @Test
+    public void testParseClassVarDec() {
+        var input = "static Parse parse;";
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parseClassVarDec();
+        var expectedResult =  """
+	     <classVarDec>
+            <keyword> static </keyword>
+            <identifier> Parse </identifier>
+            <identifier> parse </identifier>
+            <symbol> ; </symbol>
+        </classVarDec> 
+				""";
+         var result = parser.XMLOutput();
+         expectedResult = expectedResult.replaceAll("  ", "");
+         result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
+         assertEquals(expectedResult, result);
+    }
 }
