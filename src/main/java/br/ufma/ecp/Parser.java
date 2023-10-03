@@ -89,13 +89,12 @@ public class Parser {
         expectPeek(TokenType.STATIC, TokenType.FIELD);
         expectPeek(TokenType.INT, TokenType.BOOLEAN, TokenType.CHAR, TokenType.IDENT);
         expectPeek(TokenType.IDENT);
-        expectPeek(TokenType.LPAREN);
 
         while (currentTokenIs(TokenType.COMMA)) {
             expectPeek(TokenType.COMMA);
             expectPeek(TokenType.IDENT);
         }
-        expectPeek(TokenType.RPAREN);
+
         expectPeek(TokenType.SEMICOLON);
         printNonTerminal("/classVarDec");
     }
