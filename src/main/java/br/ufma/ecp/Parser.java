@@ -25,8 +25,8 @@ public class Parser {
         peekToken = scan.nextToken();
     }
 
-    private void match(TokenType t) {
-        if (currentToken.getType() == t) {
+    private void match(TokenType type) {
+        if (currentToken.getType() == type) {
             nextToken();
             return;
         }
@@ -38,49 +38,27 @@ public class Parser {
         return "+=*/<>=~&|".contains(op);
     }
 
-    void oper () {
-        if (currentToken.getType() == TokenType.PLUS || currentToken.getType() == TokenType.MINUS) {
-            String operation = currentToken.getType() == TokenType.PLUS ? "add" : "sub";
-
-            match(currentToken.getType());
-            number();
-            System.out.println(operation);
-            oper();
+    void parseTerm() {
+        printNonTerminal("term");
+        if (TokenType.isLiteral(peekToken.getType())) {
+            expectPeek(peekToken.getType());
+            printNonTerminal("/term");
             return;
         }
 
-        throw new Error("syntax error");
-    }
-
-    void parseTerm() {
-        printNonTerminal("term");
-        switch (peekToken.getType()) {
-            case NUMBER:
-                expectPeek(TokenType.NUMBER);
-                break;
-            case STRING:
-                expectPeek(TokenType.STRING);
-                break;
-            case FALSE:
-            case NULL:
-            case TRUE:
-                expectPeek(TokenType.FALSE, TokenType.NULL, TokenType.TRUE);
-                break;
-            case THIS:
-                expectPeek(TokenType.THIS);
-                break;
-            case IDENT:
-                expectPeek(TokenType.IDENT);
-                break;
-            default:
-                throw error(peekToken, "term expected");
+        if (TokenType.isBoolean(peekToken.getType())) {
+            expectPeek(TokenType.FALSE, TokenType.NUMBER, TokenType.TRUE);
+            printNonTerminal("/term");
+            return;
         }
-        printNonTerminal("/term");
+
+        throw error(peekToken, "term expected");
     }
 
     void parseExpression() {
         printNonTerminal("expression");
         parseTerm();
+
         while (isOperator(peekToken.getLexeme())) {
             expectPeek(peekToken.getType());
             parseTerm();
