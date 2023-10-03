@@ -162,7 +162,7 @@ public class ScannerTest extends TestSupport {
     }
 
     @Test
-    public void testParseClassVarDec() {
+    public void testParseClassVarDecSimple() {
         var input = "static Parse parse;";
         var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
         parser.parseClassVarDec();
@@ -178,5 +178,70 @@ public class ScannerTest extends TestSupport {
          expectedResult = expectedResult.replaceAll("  ", "");
          result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
          assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void testParseClassVarDecMultiples() {
+        var input = "static Parse parse, parseTwo, parseThree;";
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parseClassVarDec();
+        var expectedResult =  """
+	     <classVarDec>
+            <keyword> static </keyword>
+            <identifier> Parse </identifier>
+            <identifier> parse </identifier>
+            <symbol> , </symbol>
+            <identifier> parseTwo </identifier>
+            <symbol> , </symbol>
+            <identifier> parseThree </identifier>
+            <symbol> ; </symbol>
+        </classVarDec> 
+				""";
+        var result = parser.XMLOutput();
+        expectedResult = expectedResult.replaceAll("  ", "");
+        result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void testParseVarDecSimple() {
+        var input = "var boolean simple;";
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parseVarDec();
+        var expectedResult =  """
+	     <varDec>
+            <keyword> var </keyword>
+            <keyword> boolean </keyword>
+            <identifier> simple </identifier>
+            <symbol> ; </symbol>
+        </varDec> 
+				""";
+        var result = parser.XMLOutput();
+        expectedResult = expectedResult.replaceAll("  ", "");
+        result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void testParseVarDecMultiples() {
+        var input = "var boolean isBoolean, isLiteral, isKeyword;";
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parseVarDec();
+        var expectedResult =  """
+	     <varDec>
+            <keyword> var </keyword>
+            <keyword> boolean </keyword>
+            <identifier> isBoolean </identifier>
+            <symbol> , </symbol>
+            <identifier> isLiteral </identifier>
+            <symbol> , </symbol>
+            <identifier> isKeyword </identifier>
+            <symbol> ; </symbol>
+        </varDec> 
+				""";
+        var result = parser.XMLOutput();
+        expectedResult = expectedResult.replaceAll("  ", "");
+        result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
+        assertEquals(expectedResult, result);
     }
 }
