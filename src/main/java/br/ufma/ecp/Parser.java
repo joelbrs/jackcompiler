@@ -235,6 +235,25 @@ public class Parser implements Expressions, Statements, SyntacticElements {
         printNonTerminal("/varDec");
     }
 
+    @Override
+    public void parseSubRoutineBody() {
+        expectPeek(TokenType.LBRACE);
+        parseVarDec();
+        parseStatements();
+        expectPeek(TokenType.RBRACE);
+    }
+
+    @Override
+    public void subRoutineDec() {
+        expectPeek(TokenType.CONSTRUCTOR, TokenType.FUNCTION, TokenType.METHOD);
+        expectPeek(TokenType.VOID, TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
+        expectPeek(TokenType.IDENT);
+        expectPeek(TokenType.LBRACE);
+        parseExpressionList();
+        expectPeek(TokenType.RBRACE);
+        parseSubRoutineBody();
+    }
+
     private void expectPeek(TokenType... types) {
         for (TokenType type: types) {
             if (peekToken.getType() == type) {
