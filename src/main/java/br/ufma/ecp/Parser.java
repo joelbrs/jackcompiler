@@ -1,11 +1,12 @@
 package br.ufma.ecp;
 
+import br.ufma.ecp.interfaces.Expressions;
 import br.ufma.ecp.interfaces.Statements;
 import br.ufma.ecp.interfaces.SyntacticElements;
 import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
 
-public class Parser implements SyntacticElements, Statements {
+public class Parser implements Expressions, Statements, SyntacticElements {
     private static class ParseError extends RuntimeException {};
     private final Scanner scan;
     private Token currentToken;
@@ -40,7 +41,8 @@ public class Parser implements SyntacticElements, Statements {
         return "+=*/<>=~&|".contains(op);
     }
 
-    void parseTerm() {
+    @Override
+    public void parseTerm() {
         printNonTerminal("term");
         if (TokenType.isLiteral(peekToken.getType())) {
             expectPeek(peekToken.getType());
@@ -55,6 +57,37 @@ public class Parser implements SyntacticElements, Statements {
         }
 
         throw error(peekToken, "term expected");
+    }
+
+    @Override
+    public void parseSubRoutineCall() {
+        printNonTerminal("subRoutineCall");
+        expectPeek(TokenType.IDENT);
+
+        if(peekTokenIs(TokenType.LPAREN)) {
+            expectPeek(TokenType.LPAREN);
+            parseExpressionList();
+            expectPeek(TokenType.RPAREN);
+            return;
+        }
+
+        expectPeek(TokenType.DOT);
+        expectPeek(TokenType.IDENT);
+        expectPeek(TokenType.LPAREN);
+        parseExpressionList();
+        expectPeek(TokenType.RPAREN);
+        printNonTerminal("/subRoutineCall");
+    }
+
+    @Override
+    public void parseExpressionList() {
+        printNonTerminal("expressionList");
+        parseExpression();
+        if (peekTokenIs(TokenType.COMMA)) {
+            expectPeek(TokenType.COMMA);
+            parseExpression();
+        }
+        printNonTerminal("/expressionList");
     }
 
     @Override
@@ -77,7 +110,8 @@ public class Parser implements SyntacticElements, Statements {
            //TODO: completar quando os outros métodos estiverem prontos
     }
 
-    void parseExpression() {
+    @Override
+    public void parseExpression() {
         printNonTerminal("expression");
         parseTerm();
 
@@ -145,7 +179,11 @@ public class Parser implements SyntacticElements, Statements {
 
     @Override
     public void parseDo() {
-
+        printNonTerminal("doStatement");
+        expectPeek(TokenType.DO);
+        parseSubRoutineCall();
+        expectPeek(TokenType.SEMICOLON);
+        printNonTerminal("/doStatement");
     }
 
     @Override
