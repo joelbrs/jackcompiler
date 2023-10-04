@@ -57,6 +57,18 @@ public class Parser implements SyntacticElements, Statements {
         throw error(peekToken, "term expected");
     }
 
+    @Override
+    public void parseStatements() {
+            if (peekTokenIs(TokenType.LET)) {
+                parseLet();
+            }
+
+            if (peekTokenIs(TokenType.IF)) {
+                parseIf();
+            }
+           //TODO: completar quando os outros métodos estiverem prontos
+    }
+
     void parseExpression() {
         printNonTerminal("expression");
         parseTerm();
@@ -88,7 +100,26 @@ public class Parser implements SyntacticElements, Statements {
 
     @Override
     public void parseIf() {
+        printNonTerminal("ifStatement");
+        expectPeek(TokenType.IF);
+        expectPeek(TokenType.LPAREN);
+        parseExpression();
+        expectPeek(TokenType.RPAREN);
+        expectPeek(TokenType.LBRACE);
+        if (!peekTokenIs(TokenType.RBRACE)) {
+            parseStatements();
+        }
+        expectPeek(TokenType.RBRACE);
 
+        if(peekTokenIs(TokenType.ELSE)) {
+            expectPeek(TokenType.ELSE);
+            expectPeek(TokenType.LBRACE);
+            if (!peekTokenIs(TokenType.RBRACE)) {
+                parseStatements();
+            }
+            expectPeek(TokenType.RBRACE);
+        }
+        printNonTerminal("/ifStatement");
     }
 
     @Override
