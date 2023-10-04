@@ -382,4 +382,65 @@ public class ScannerTest extends TestSupport {
         result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
         assertEquals(expectedResult, result);
     }
+
+    @Test
+    public void testParseWhileSimple() {
+        var input = "while (statement) {}";
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parseWhile();
+        var expectedResult =  """
+                  <whileStatement>
+                        <keyword> while </keyword>
+                        <symbol> ( </symbol>
+                        <expression>
+                        <term>
+                        <identifier> statement </identifier>
+                        </term>
+                        </expression>
+                        <symbol> ) </symbol>
+                        <symbol> { </symbol>
+                        <symbol> } </symbol>
+                        </whileStatement>
+                """;
+        var result = parser.XMLOutput();
+        expectedResult = expectedResult.replaceAll("  ", "");
+        result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
+        assertEquals(expectedResult, result);
+    }
+    @Test
+    public void testParseWhileWithExpression() {
+        var input = "while (statement) { let x = 10; }";
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parseWhile();
+        var expectedResult =  """
+                  <whileStatement>
+                        <keyword> while </keyword>
+                        <symbol> ( </symbol>
+                        <expression>
+                        <term>
+                        <identifier> statement </identifier>
+                        </term>
+                        </expression>
+                        <symbol> ) </symbol>
+                        <symbol> { </symbol>
+                        <letStatement>
+                        <keyword> let </keyword>
+                        <identifier> x </identifier>
+                        <symbol> = </symbol>
+                        <expression>
+                        <term>
+                        <integerConstant> 10 </integerConstant>
+                        </term>
+                        </expression> 
+                        <symbol> ; </symbol>
+                        </letStatement>
+                        <symbol> } </symbol>
+                        </whileStatement>
+                """;
+        var result = parser.XMLOutput();
+        expectedResult = expectedResult.replaceAll("  ", "");
+        result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
+        assertEquals(expectedResult, result);
+    }
+
 }
