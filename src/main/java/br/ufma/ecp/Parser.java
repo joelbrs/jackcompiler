@@ -66,6 +66,10 @@ public class Parser implements SyntacticElements, Statements {
             if (peekTokenIs(TokenType.IF)) {
                 parseIf();
             }
+
+            if (peekTokenIs(TokenType.WHILE)) {
+                parseWhile();
+            }
            //TODO: completar quando os outros métodos estiverem prontos
     }
 
@@ -124,7 +128,15 @@ public class Parser implements SyntacticElements, Statements {
 
     @Override
     public void parseWhile() {
-
+        printNonTerminal("whileStatement");
+        expectPeek(TokenType.WHILE);
+        expectPeek(TokenType.LPAREN);
+        parseExpression();
+        expectPeek(TokenType.RPAREN);
+        expectPeek(TokenType.LBRACE);
+        parseStatements();
+        expectPeek(TokenType.RBRACE);
+        printNonTerminal("/whileStatement");
     }
 
     @Override
