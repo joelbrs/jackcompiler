@@ -443,4 +443,42 @@ public class ScannerTest extends TestSupport {
         assertEquals(expectedResult, result);
     }
 
+    @Test
+    public void testParseVoidReturn() {
+        var input = "return;";
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parseReturn();
+        var expectedResult =  """
+                  <returnStatement>
+                        <keyword> return </keyword>
+                        <symbol> ; </symbol>
+                  </returnStatement>
+                """;
+        var result = parser.XMLOutput();
+        expectedResult = expectedResult.replaceAll("  ", "");
+        result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void testParseReturnExpression() {
+        var input = "return x;";
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parseReturn();
+        var expectedResult =  """
+                  <returnStatement>
+                        <keyword> return </keyword>
+                        <expression>
+                        <term>
+                        <identifier> x </identifier>
+                        </term>
+                        </expression>
+                        <symbol> ; </symbol>
+                  </returnStatement>
+                """;
+        var result = parser.XMLOutput();
+        expectedResult = expectedResult.replaceAll("  ", "");
+        result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
+        assertEquals(expectedResult, result);
+    }
 }
