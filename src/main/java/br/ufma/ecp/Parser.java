@@ -107,7 +107,10 @@ public class Parser implements Expressions, Statements, SyntacticElements {
             if (peekTokenIs(TokenType.RETURN)) {
                 parseReturn();
             }
-           //TODO: completar quando os outros métodos estiverem prontos
+
+            if (peekTokenIs(TokenType.DO)) {
+                parseDo();
+            }
     }
 
     @Override
