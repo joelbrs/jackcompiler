@@ -70,6 +70,10 @@ public class Parser implements SyntacticElements, Statements {
             if (peekTokenIs(TokenType.WHILE)) {
                 parseWhile();
             }
+
+            if (peekTokenIs(TokenType.RETURN)) {
+                parseReturn();
+            }
            //TODO: completar quando os outros métodos estiverem prontos
     }
 
@@ -146,7 +150,16 @@ public class Parser implements SyntacticElements, Statements {
 
     @Override
     public void parseReturn() {
-
+        printNonTerminal("returnStatement");
+        expectPeek(TokenType.RETURN);
+        if (peekTokenIs(TokenType.SEMICOLON)) {
+            expectPeek(TokenType.SEMICOLON);
+            printNonTerminal("/returnStatement");
+            return;
+        }
+        parseExpression();
+        expectPeek(TokenType.SEMICOLON);
+        printNonTerminal("/returnStatement");
     }
 
     @Override
