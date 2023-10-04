@@ -244,4 +244,142 @@ public class ScannerTest extends TestSupport {
         result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
         assertEquals(expectedResult, result);
     }
+
+    @Test
+    public void testParseIfSimple() {
+        var input = "if (statement) {}";
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parseIf();
+        var expectedResult =  """
+                  <ifStatement>
+                        <keyword> if </keyword>
+                        <symbol> ( </symbol>
+                        <expression>
+                        <term>
+                        <identifier> statement </identifier>
+                        </term>
+                        </expression>
+                        <symbol> ) </symbol>
+                        <symbol> { </symbol>
+                        <symbol> } </symbol>
+                    </ifStatement> 
+                """;
+        var result = parser.XMLOutput();
+        expectedResult = expectedResult.replaceAll("  ", "");
+        result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void testParseIfElseSimple() {
+        var input = "if (statement) {} else {}";
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parseIf();
+        var expectedResult =  """
+                  <ifStatement>
+                        <keyword> if </keyword>
+                        <symbol> ( </symbol>
+                        <expression>
+                        <term>
+                        <identifier> statement </identifier>
+                        </term>
+                        </expression>
+                        <symbol> ) </symbol>
+                        <symbol> { </symbol>
+                        <symbol> } </symbol>
+                        <keyword> else </keyword>
+                        <symbol> { </symbol>
+                        <symbol> } </symbol>
+                    </ifStatement> 
+                """;
+        var result = parser.XMLOutput();
+        expectedResult = expectedResult.replaceAll("  ", "");
+        result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
+        assertEquals(expectedResult, result);
+    }
+    @Test
+    public void testParseIfWithExpression() {
+        var input = "if (statement) { let x = 10; }";
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parseIf();
+        var expectedResult =  """
+                  <ifStatement>
+                        <keyword> if </keyword>
+                        <symbol> ( </symbol>
+                        <expression>
+                        <term>
+                        <identifier> statement </identifier>
+                        </term>
+                        </expression>
+                        <symbol> ) </symbol>
+                        <symbol> { </symbol>
+                        <letStatement>
+                        <keyword> let </keyword>
+                        <identifier> x </identifier>
+                        <symbol> = </symbol>
+                        <expression>
+                        <term>
+                        <integerConstant> 10 </integerConstant>
+                        </term>
+                        </expression> 
+                        <symbol> ; </symbol>
+                        </letStatement>
+                        <symbol> } </symbol>
+                    </ifStatement> 
+                """;
+        var result = parser.XMLOutput();
+        expectedResult = expectedResult.replaceAll("  ", "");
+        result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void testParseIfElseWithExpression() {
+        var input = "if (statement) { let x = 10; } else { let x = 20; }";
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parseIf();
+        var expectedResult =  """
+                  <ifStatement>
+                        <keyword> if </keyword>
+                        <symbol> ( </symbol>
+                        <expression>
+                        <term>
+                        <identifier> statement </identifier>
+                        </term>
+                        </expression>
+                        <symbol> ) </symbol>
+                        <symbol> { </symbol>
+                        <letStatement>
+                        <keyword> let </keyword>
+                        <identifier> x </identifier>
+                        <symbol> = </symbol>
+                        <expression>
+                        <term>
+                        <integerConstant> 10 </integerConstant>
+                        </term>
+                        </expression> 
+                        <symbol> ; </symbol>
+                        </letStatement>
+                        <symbol> } </symbol>
+                        <keyword> else </keyword>
+                        <symbol> { </symbol>
+                        <letStatement>
+                        <keyword> let </keyword>
+                        <identifier> x </identifier>
+                        <symbol> = </symbol>
+                        <expression>
+                        <term>
+                        <integerConstant> 20 </integerConstant>
+                        </term>
+                        </expression> 
+                        <symbol> ; </symbol>
+                        </letStatement>
+                        <symbol> } </symbol>
+                    </ifStatement> 
+                """;
+        var result = parser.XMLOutput();
+        expectedResult = expectedResult.replaceAll("  ", "");
+        result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
+        assertEquals(expectedResult, result);
+    }
 }
