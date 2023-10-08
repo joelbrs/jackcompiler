@@ -38,11 +38,6 @@ public class Parser implements SyntacticElements {
                     parseSubRoutineCall();
                 }
 
-                if (peekTokenIs(TokenType.LBRACKET)) {
-                    expectPeek(TokenType.LBRACKET);
-                    parseExpression();
-                    expectPeek(TokenType.RBRACKET);
-                }
                 printNonTerminal("/term");
 
                 if (currentIsUnaryOrRParen) {
@@ -156,13 +151,6 @@ public class Parser implements SyntacticElements {
         printNonTerminal("letStatement");
         expectPeek(TokenType.LET);
         expectPeek(TokenType.IDENT);
-
-        if (peekTokenIs(TokenType.LBRACKET)) {
-            expectPeek(TokenType.LBRACKET);
-            parseExpression();
-            expectPeek(TokenType.RBRACKET);
-        }
-
         expectPeek(TokenType.EQ);
         parseExpression();
         expectPeek(TokenType.SEMICOLON);
@@ -177,19 +165,8 @@ public class Parser implements SyntacticElements {
         parseExpression();
         expectPeek(TokenType.RPAREN);
         expectPeek(TokenType.LBRACE);
-        if (!peekTokenIs(TokenType.RBRACE)) {
-            parseStatements();
-        }
+        parseStatements();
         expectPeek(TokenType.RBRACE);
-
-        if(peekTokenIs(TokenType.ELSE)) {
-            expectPeek(TokenType.ELSE);
-            expectPeek(TokenType.LBRACE);
-            if (!peekTokenIs(TokenType.RBRACE)) {
-                parseStatements();
-            }
-            expectPeek(TokenType.RBRACE);
-        }
         printNonTerminal("/ifStatement");
     }
 
@@ -197,13 +174,9 @@ public class Parser implements SyntacticElements {
     public void parseWhile() {
         printNonTerminal("whileStatement");
         expectPeek(TokenType.WHILE);
-        while(peekTokenIs(TokenType.LPAREN)) {
-            expectPeek(TokenType.LPAREN);
-        }
+        expectPeek(TokenType.LPAREN);
         parseExpression();
-        while(peekTokenIs(TokenType.RPAREN)) {
-            expectPeek(TokenType.RPAREN);
-        }
+        expectPeek(TokenType.RPAREN);
         expectPeek(TokenType.LBRACE);
         parseStatements();
         expectPeek(TokenType.RBRACE);
@@ -249,7 +222,6 @@ public class Parser implements SyntacticElements {
 
             expectPeek(TokenType.SEMICOLON);
             printNonTerminal("/classVarDec");
-
         }
     }
 
@@ -260,11 +232,6 @@ public class Parser implements SyntacticElements {
             expectPeek(TokenType.VAR);
             expectPeek(TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
             expectPeek(TokenType.IDENT);
-
-            while (peekTokenIs(TokenType.COMMA)) {
-                expectPeek(TokenType.COMMA);
-                expectPeek(TokenType.IDENT);
-            }
             expectPeek(TokenType.SEMICOLON);
             printNonTerminal("/varDec");
         }
@@ -274,12 +241,8 @@ public class Parser implements SyntacticElements {
     public void parseSubRoutineBody() {
         printNonTerminal("subroutineBody");
         expectPeek(TokenType.LBRACE);
-
-        if (peekTokenIs(TokenType.VAR)) {
-            parseVarDec();
-        }
+        parseVarDec();
         parseStatements();
-
         expectPeek(TokenType.RBRACE);
         printNonTerminal("/subroutineBody");
     }
