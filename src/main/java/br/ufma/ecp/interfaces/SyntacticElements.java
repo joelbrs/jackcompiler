@@ -16,4 +16,5 @@ public interface SyntacticElements {
     void parseSubRoutineBody();
     void parseSubRoutineDec();
     void parseParameterList();
+    void parseClass();
 }

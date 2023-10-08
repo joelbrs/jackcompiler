@@ -28,6 +28,8 @@ public class Parser implements SyntacticElements {
     @Override
     public void parseTerm() {
         printNonTerminal("term");
+        boolean currentIsUnaryOrRParen = currentTokenIs(TokenType.NOT) || currentTokenIs(TokenType.MINUS) || currentTokenIs(TokenType.RPAREN);
+
         if (TokenType.isLiteral(peekToken.getType())) {
             if (peekTokenIs(TokenType.IDENT)) {
                 expectPeek(TokenType.IDENT);
@@ -35,7 +37,17 @@ public class Parser implements SyntacticElements {
                 if (peekTokenIs(TokenType.LPAREN) || peekTokenIs(TokenType.DOT)) {
                     parseSubRoutineCall();
                 }
+
+                if (peekTokenIs(TokenType.LBRACKET)) {
+                    expectPeek(TokenType.LBRACKET);
+                    parseExpression();
+                    expectPeek(TokenType.RBRACKET);
+                }
                 printNonTerminal("/term");
+
+                if (currentIsUnaryOrRParen) {
+                    printNonTerminal("/term");
+                }
                 return;
             }
 
@@ -50,9 +62,21 @@ public class Parser implements SyntacticElements {
             return;
         }
 
-        if (TokenType.isSymbol(peekToken.getLexeme().charAt(0))) {
-            expectPeek(peekToken.getType());
+        if (peekTokenIs(TokenType.LPAREN)) {
+            expectPeek(TokenType.LPAREN);
+            parseExpression();
+            expectPeek(TokenType.RPAREN);
             printNonTerminal("/term");
+
+            if (currentIsUnaryOrRParen) {
+                printNonTerminal("/term");
+            }
+            return;
+        }
+
+        if (peekTokenIs(TokenType.NOT) || peekTokenIs(TokenType.MINUS)) {
+            expectPeek(peekToken.getType());
+            parseTerm();
             return;
         }
 
@@ -173,9 +197,13 @@ public class Parser implements SyntacticElements {
     public void parseWhile() {
         printNonTerminal("whileStatement");
         expectPeek(TokenType.WHILE);
-        expectPeek(TokenType.LPAREN);
+        while(peekTokenIs(TokenType.LPAREN)) {
+            expectPeek(TokenType.LPAREN);
+        }
         parseExpression();
-        expectPeek(TokenType.RPAREN);
+        while(peekTokenIs(TokenType.RPAREN)) {
+            expectPeek(TokenType.RPAREN);
+        }
         expectPeek(TokenType.LBRACE);
         parseStatements();
         expectPeek(TokenType.RBRACE);
@@ -208,34 +236,38 @@ public class Parser implements SyntacticElements {
 
     @Override
     public void parseClassVarDec() {
-        printNonTerminal("classVarDec");
-
-        expectPeek(TokenType.STATIC, TokenType.FIELD);
-        expectPeek(TokenType.INT, TokenType.BOOLEAN, TokenType.CHAR, TokenType.IDENT);
-        expectPeek(TokenType.IDENT);
-
-        while (peekTokenIs(TokenType.COMMA)) {
-            expectPeek(TokenType.COMMA);
+        while (peekTokenIs(TokenType.STATIC) || peekTokenIs(TokenType.FIELD)) {
+            printNonTerminal("classVarDec");
+            expectPeek(TokenType.STATIC, TokenType.FIELD);
+            expectPeek(TokenType.INT, TokenType.BOOLEAN, TokenType.CHAR, TokenType.IDENT);
             expectPeek(TokenType.IDENT);
-        }
 
-        expectPeek(TokenType.SEMICOLON);
-        printNonTerminal("/classVarDec");
+            while (peekTokenIs(TokenType.COMMA)) {
+                expectPeek(TokenType.COMMA);
+                expectPeek(TokenType.IDENT);
+            }
+
+            expectPeek(TokenType.SEMICOLON);
+            printNonTerminal("/classVarDec");
+
+        }
     }
 
     @Override
     public void parseVarDec() {
-        printNonTerminal("varDec");
-        expectPeek(TokenType.VAR);
-        expectPeek(TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
-        expectPeek(TokenType.IDENT);
-
-        while (peekTokenIs(TokenType.COMMA)) {
-            expectPeek(TokenType.COMMA);
+        while (peekTokenIs(TokenType.VAR)) {
+            printNonTerminal("varDec");
+            expectPeek(TokenType.VAR);
+            expectPeek(TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
             expectPeek(TokenType.IDENT);
+
+            while (peekTokenIs(TokenType.COMMA)) {
+                expectPeek(TokenType.COMMA);
+                expectPeek(TokenType.IDENT);
+            }
+            expectPeek(TokenType.SEMICOLON);
+            printNonTerminal("/varDec");
         }
-        expectPeek(TokenType.SEMICOLON);
-        printNonTerminal("/varDec");
     }
 
     @Override
@@ -254,29 +286,46 @@ public class Parser implements SyntacticElements {
 
     @Override
     public void parseSubRoutineDec() {
-        printNonTerminal("subroutineDec");
-        expectPeek(TokenType.CONSTRUCTOR, TokenType.FUNCTION, TokenType.METHOD);
-        expectPeek(TokenType.VOID, TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
-        expectPeek(TokenType.IDENT);
-        expectPeek(TokenType.LPAREN);
-        parseParameterList();
-        expectPeek(TokenType.RPAREN);
-        parseSubRoutineBody();
-        printNonTerminal("/subroutineDec");
+        while (peekTokenIs(TokenType.CONSTRUCTOR) || peekTokenIs(TokenType.FUNCTION) || peekTokenIs(TokenType.METHOD)) {
+            printNonTerminal("subroutineDec");
+            expectPeek(TokenType.CONSTRUCTOR, TokenType.FUNCTION, TokenType.METHOD);
+            expectPeek(TokenType.VOID, TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
+            expectPeek(TokenType.IDENT);
+            expectPeek(TokenType.LPAREN);
+            parseParameterList();
+            expectPeek(TokenType.RPAREN);
+            parseSubRoutineBody();
+            printNonTerminal("/subroutineDec");
+        }
     }
 
     @Override
     public void parseParameterList() {
         printNonTerminal("parameterList");
-        expectPeek(TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
-        expectPeek(TokenType.IDENT);
-
-        while (peekTokenIs(TokenType.COMMA)) {
-            expectPeek(TokenType.COMMA);
+        if (peekTokenIs(TokenType.INT) || peekTokenIs(TokenType.CHAR) || peekTokenIs(TokenType.BOOLEAN) || peekTokenIs(TokenType.IDENT)) {
             expectPeek(TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
             expectPeek(TokenType.IDENT);
+
+            while (peekTokenIs(TokenType.COMMA)) {
+                expectPeek(TokenType.COMMA);
+                expectPeek(TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
+                expectPeek(TokenType.IDENT);
+            }
         }
+
         printNonTerminal("/parameterList");
+    }
+
+    @Override
+    public void parseClass() {
+        printNonTerminal("class");
+        expectPeek(TokenType.CLASS);
+        expectPeek(TokenType.IDENT);
+        expectPeek(TokenType.LBRACE);
+        parseClassVarDec();
+        parseSubRoutineDec();
+        expectPeek(TokenType.RBRACE);
+        printNonTerminal("/class");
     }
 
     private void expectPeek(TokenType... types) {
