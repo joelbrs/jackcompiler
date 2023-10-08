@@ -1,26 +1,19 @@
 package br.ufma.ecp;
 
-import br.ufma.ecp.interfaces.Expressions;
-import br.ufma.ecp.interfaces.Statements;
 import br.ufma.ecp.interfaces.SyntacticElements;
 import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
 
-public class Parser implements Expressions, Statements, SyntacticElements {
+public class Parser implements SyntacticElements {
     private static class ParseError extends RuntimeException {};
     private final Scanner scan;
     private Token currentToken;
     private Token peekToken;
-    private StringBuilder xmlOutput = new StringBuilder();
+    private final StringBuilder xmlOutput = new StringBuilder();
 
     public Parser (byte[] input) {
         scan = new Scanner(input);
         nextToken();
-    }
-
-    void number () {
-        System.out.println(currentToken.getLexeme());
-        match(TokenType.NUMBER);
     }
 
     private void nextToken () {
@@ -28,30 +21,37 @@ public class Parser implements Expressions, Statements, SyntacticElements {
         peekToken = scan.nextToken();
     }
 
-    private void match(TokenType type) {
-        if (currentToken.getType() == type) {
-            nextToken();
-            return;
-        }
-
-        throw new Error("syntax error");
-    }
-
     static public boolean isOperator(String op) {
-        return "+=*/<>=~&|".contains(op);
+        return "+=*/<>-~&|.".contains(op);
     }
 
     @Override
     public void parseTerm() {
         printNonTerminal("term");
         if (TokenType.isLiteral(peekToken.getType())) {
+            if (peekTokenIs(TokenType.IDENT)) {
+                expectPeek(TokenType.IDENT);
+
+                if (peekTokenIs(TokenType.LPAREN) || peekTokenIs(TokenType.DOT)) {
+                    parseSubRoutineCall();
+                }
+                printNonTerminal("/term");
+                return;
+            }
+
             expectPeek(peekToken.getType());
             printNonTerminal("/term");
             return;
         }
 
         if (TokenType.isBoolean(peekToken.getType())) {
-            expectPeek(TokenType.FALSE, TokenType.NUMBER, TokenType.TRUE);
+            expectPeek(TokenType.FALSE, TokenType.NULL, TokenType.TRUE);
+            printNonTerminal("/term");
+            return;
+        }
+
+        if (TokenType.isSymbol(peekToken.getLexeme().charAt(0))) {
+            expectPeek(peekToken.getType());
             printNonTerminal("/term");
             return;
         }
@@ -61,9 +61,6 @@ public class Parser implements Expressions, Statements, SyntacticElements {
 
     @Override
     public void parseSubRoutineCall() {
-        printNonTerminal("subRoutineCall");
-        expectPeek(TokenType.IDENT);
-
         if(peekTokenIs(TokenType.LPAREN)) {
             expectPeek(TokenType.LPAREN);
             parseExpressionList();
@@ -76,14 +73,15 @@ public class Parser implements Expressions, Statements, SyntacticElements {
         expectPeek(TokenType.LPAREN);
         parseExpressionList();
         expectPeek(TokenType.RPAREN);
-        printNonTerminal("/subRoutineCall");
     }
 
     @Override
     public void parseExpressionList() {
         printNonTerminal("expressionList");
-        parseExpression();
-        if (peekTokenIs(TokenType.COMMA)) {
+        if (!peekTokenIs(TokenType.RPAREN)) {
+            parseExpression();
+        }
+        while (peekTokenIs(TokenType.COMMA)) {
             expectPeek(TokenType.COMMA);
             parseExpression();
         }
@@ -92,25 +90,29 @@ public class Parser implements Expressions, Statements, SyntacticElements {
 
     @Override
     public void parseStatements() {
-            if (peekTokenIs(TokenType.LET)) {
-                parseLet();
-            }
+            printNonTerminal("statements");
+            while (TokenType.isStatement(peekToken.getType())) {
+                if (peekTokenIs(TokenType.LET)) {
+                    parseLet();
+                }
 
-            if (peekTokenIs(TokenType.IF)) {
-                parseIf();
-            }
+                if (peekTokenIs(TokenType.IF)) {
+                    parseIf();
+                }
 
-            if (peekTokenIs(TokenType.WHILE)) {
-                parseWhile();
-            }
+                if (peekTokenIs(TokenType.WHILE)) {
+                    parseWhile();
+                }
 
-            if (peekTokenIs(TokenType.RETURN)) {
-                parseReturn();
-            }
+                if (peekTokenIs(TokenType.RETURN)) {
+                    parseReturn();
+                }
 
-            if (peekTokenIs(TokenType.DO)) {
-                parseDo();
+                if (peekTokenIs(TokenType.DO)) {
+                    parseDo();
+                }
             }
+            printNonTerminal("/statements");
     }
 
     @Override
@@ -184,6 +186,7 @@ public class Parser implements Expressions, Statements, SyntacticElements {
     public void parseDo() {
         printNonTerminal("doStatement");
         expectPeek(TokenType.DO);
+        expectPeek(TokenType.IDENT);
         parseSubRoutineCall();
         expectPeek(TokenType.SEMICOLON);
         printNonTerminal("/doStatement");
@@ -237,21 +240,43 @@ public class Parser implements Expressions, Statements, SyntacticElements {
 
     @Override
     public void parseSubRoutineBody() {
+        printNonTerminal("subroutineBody");
         expectPeek(TokenType.LBRACE);
-        parseVarDec();
+
+        if (peekTokenIs(TokenType.VAR)) {
+            parseVarDec();
+        }
         parseStatements();
+
         expectPeek(TokenType.RBRACE);
+        printNonTerminal("/subroutineBody");
     }
 
     @Override
-    public void subRoutineDec() {
+    public void parseSubRoutineDec() {
+        printNonTerminal("subroutineDec");
         expectPeek(TokenType.CONSTRUCTOR, TokenType.FUNCTION, TokenType.METHOD);
         expectPeek(TokenType.VOID, TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
         expectPeek(TokenType.IDENT);
-        expectPeek(TokenType.LBRACE);
-        parseExpressionList();
-        expectPeek(TokenType.RBRACE);
+        expectPeek(TokenType.LPAREN);
+        parseParameterList();
+        expectPeek(TokenType.RPAREN);
         parseSubRoutineBody();
+        printNonTerminal("/subroutineDec");
+    }
+
+    @Override
+    public void parseParameterList() {
+        printNonTerminal("parameterList");
+        expectPeek(TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
+        expectPeek(TokenType.IDENT);
+
+        while (peekTokenIs(TokenType.COMMA)) {
+            expectPeek(TokenType.COMMA);
+            expectPeek(TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
+            expectPeek(TokenType.IDENT);
+        }
+        printNonTerminal("/parameterList");
     }
 
     private void expectPeek(TokenType... types) {
@@ -295,7 +320,7 @@ public class Parser implements Expressions, Statements, SyntacticElements {
 
     private ParseError error(Token token, String message) {
         if (token.getType() == TokenType.EOF) {
-            report(token.getLine(), "at end", message);
+            report(token.getLine(), " at end", message);
         }
 
         if (token.getType() != TokenType.EOF) {

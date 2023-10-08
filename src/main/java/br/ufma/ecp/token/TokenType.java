@@ -33,20 +33,20 @@ public enum TokenType {
           type = c;
      }
 
-     private static final List<TokenType> booleanTypes = List.of(
+     private static final List<TokenType> booleanTokens = List.of(
              TRUE,
              FALSE,
              NULL
      );
 
-     private static final List<TokenType> literalsTypes = List.of(
+     private static final List<TokenType> literalsTokens = List.of(
              NUMBER,
              STRING,
              IDENT,
              THIS
      );
 
-     private static final List<TokenType> keywordsTypes = List.of(
+     private static final List<TokenType> keywordsTokens = List.of(
              METHOD,
              WHILE,
              IF,
@@ -70,6 +70,14 @@ public enum TokenType {
              RETURN
      );
 
+     private static final List<TokenType> statementTokens = List.of(
+          LET,
+          IF,
+          WHILE,
+          RETURN,
+          DO
+     );
+
      public Object getType() {
           if (type != null) {
                return type;
@@ -83,16 +91,16 @@ public enum TokenType {
      }
 
      static public boolean isKeyword(TokenType type) {
-        return keywordsTypes.contains(type);
+        return keywordsTokens.contains(type);
      }
 
-     static public boolean isLiteral(TokenType type) {
-          return literalsTypes.contains(type);
-    }
+     static public boolean isLiteral(TokenType type) { return literalsTokens.contains(type); }
 
      static public boolean isBoolean(TokenType type) {
-         return booleanTypes.contains(type);
+         return booleanTokens.contains(type);
     }
+
+     static public boolean isStatement(TokenType type) { return statementTokens.contains(type); }
 }
 
 
