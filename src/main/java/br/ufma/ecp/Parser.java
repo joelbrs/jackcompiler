@@ -232,11 +232,14 @@ public class Parser implements SyntacticElements {
         expectPeek(TokenType.RETURN);
         if (peekTokenIs(TokenType.SEMICOLON)) {
             expectPeek(TokenType.SEMICOLON);
+            vmWriter.writePush(VMWriter.Segment.CONST, 0);
+            vmWriter.writeReturn();
             printNonTerminal("/returnStatement");
             return;
         }
         parseExpression();
         expectPeek(TokenType.SEMICOLON);
+        vmWriter.writeReturn();
         printNonTerminal("/returnStatement");
     }
 
