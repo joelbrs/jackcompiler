@@ -4,9 +4,6 @@ import br.ufma.ecp.interfaces.SyntacticElements;
 import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
 
-import static br.ufma.ecp.token.TokenType.ASTERISK;
-import static br.ufma.ecp.token.TokenType.SLASH;
-
 public class Parser implements SyntacticElements {
     private static class ParseError extends RuntimeException {};
     private final Scanner scan;
@@ -37,6 +34,16 @@ public class Parser implements SyntacticElements {
         if (TokenType.isLiteral(peekToken.getType())) {
             if (peekTokenIs(TokenType.NUMBER)) {
                 vmWriter.writePush(VMWriter.Segment.CONST, Integer.parseInt(peekToken.getLexeme()));
+            }
+
+            if (peekTokenIs(TokenType.STRING)) {
+                var strValue = peekToken.getLexeme();
+                vmWriter.writePush(VMWriter.Segment.CONST, strValue.length());
+                vmWriter.writeCall("String.new", 1);
+                for (int i = 0; i < strValue.length(); i++) {
+                    vmWriter.writePush(VMWriter.Segment.CONST, strValue.charAt(i));
+                    vmWriter.writeCall("String.appendChar", 2);
+                }
             }
 
             if (peekTokenIs(TokenType.IDENT)) {
