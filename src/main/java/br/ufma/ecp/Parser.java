@@ -1,10 +1,9 @@
 package br.ufma.ecp;
 
-import br.ufma.ecp.interfaces.SyntacticElements;
 import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
 
-public class Parser implements SyntacticElements {
+public class Parser {
     private static class ParseError extends RuntimeException {};
     private final StringBuilder xmlOutput = new StringBuilder();
     private final VMWriter vmWriter = new VMWriter();
@@ -30,7 +29,6 @@ public class Parser implements SyntacticElements {
         return "+=*/<>-~&|.".contains(op);
     }
 
-    @Override
     public void parseTerm() {
         printNonTerminal("term");
         boolean currentIsUnaryOrRParen = currentToken != null && (currentTokenIs(TokenType.NOT) || currentTokenIs(TokenType.MINUS) || currentTokenIs(TokenType.RPAREN));
@@ -113,7 +111,6 @@ public class Parser implements SyntacticElements {
         throw error(peekToken, "term expected");
     }
 
-    @Override
     public void parseSubRoutineCall() {
         if(peekTokenIs(TokenType.LPAREN)) {
             expectPeek(TokenType.LPAREN);
@@ -129,7 +126,6 @@ public class Parser implements SyntacticElements {
         expectPeek(TokenType.RPAREN);
     }
 
-    @Override
     public void parseExpressionList() {
         printNonTerminal("expressionList");
         if (!peekTokenIs(TokenType.RPAREN)) {
@@ -142,7 +138,6 @@ public class Parser implements SyntacticElements {
         printNonTerminal("/expressionList");
     }
 
-    @Override
     public void parseStatements() {
             printNonTerminal("statements");
             while (TokenType.isStatement(peekToken.getType())) {
@@ -169,7 +164,6 @@ public class Parser implements SyntacticElements {
             printNonTerminal("/statements");
     }
 
-    @Override
     public void parseExpression() {
         printNonTerminal("expression");
         parseTerm();
@@ -183,7 +177,6 @@ public class Parser implements SyntacticElements {
         printNonTerminal("/expression");
     }
 
-    @Override
     public void parseLet() {
         printNonTerminal("letStatement");
         expectPeek(TokenType.LET);
@@ -194,7 +187,6 @@ public class Parser implements SyntacticElements {
         printNonTerminal("/letStatement");
     }
 
-    @Override
     public void parseIf() {
         printNonTerminal("ifStatement");
 
@@ -233,7 +225,6 @@ public class Parser implements SyntacticElements {
         printNonTerminal("/ifStatement");
     }
 
-    @Override
     public void parseWhile() {
         printNonTerminal("whileStatement");
 
@@ -261,7 +252,6 @@ public class Parser implements SyntacticElements {
         printNonTerminal("/whileStatement");
     }
 
-    @Override
     public void parseDo() {
         printNonTerminal("doStatement");
         expectPeek(TokenType.DO);
@@ -271,7 +261,6 @@ public class Parser implements SyntacticElements {
         printNonTerminal("/doStatement");
     }
 
-    @Override
     public void parseReturn() {
         printNonTerminal("returnStatement");
         expectPeek(TokenType.RETURN);
@@ -288,11 +277,11 @@ public class Parser implements SyntacticElements {
         printNonTerminal("/returnStatement");
     }
 
-    @Override
     public void parseClassVarDec() {
         while (peekTokenIs(TokenType.STATIC) || peekTokenIs(TokenType.FIELD)) {
             printNonTerminal("classVarDec");
             expectPeek(TokenType.STATIC, TokenType.FIELD);
+
             SymbolTable.Kind kind = SymbolTable.Kind.STATIC;
             if (currentTokenIs(TokenType.FIELD)) {
                 kind = SymbolTable.Kind.FIELD;
@@ -317,7 +306,6 @@ public class Parser implements SyntacticElements {
         }
     }
 
-    @Override
     public void parseVarDec() {
         while (peekTokenIs(TokenType.VAR)) {
             printNonTerminal("varDec");
@@ -332,9 +320,8 @@ public class Parser implements SyntacticElements {
 
             //TODO: verificar
             String name = currentToken.getLexeme();
-            if (currentToken.getLexeme().equals(type)) {
-                symTable.define(name, type, kind);
-            }
+
+            symTable.define(name, type, kind);
 
             while (peekTokenIs(TokenType.COMMA)) {
                 expectPeek(TokenType.COMMA);
@@ -349,17 +336,19 @@ public class Parser implements SyntacticElements {
         }
     }
 
-    @Override
-    public void parseSubRoutineBody() {
+    public void parseSubRoutineBody(String functionName, TokenType subroutineType) {
         printNonTerminal("subroutineBody");
         expectPeek(TokenType.LBRACE);
         parseVarDec();
+
+        var nlocals = symTable.varCount(SymbolTable.Kind.VAR);
+        vmWriter.writeFunction(functionName, nlocals);
+
         parseStatements();
         expectPeek(TokenType.RBRACE);
         printNonTerminal("/subroutineBody");
     }
 
-    @Override
     public void parseSubRoutineDec() {
         while (peekTokenIs(TokenType.CONSTRUCTOR) || peekTokenIs(TokenType.FUNCTION) || peekTokenIs(TokenType.METHOD)) {
             printNonTerminal("subroutineDec");
@@ -371,20 +360,22 @@ public class Parser implements SyntacticElements {
 
             expectPeek(TokenType.CONSTRUCTOR, TokenType.FUNCTION, TokenType.METHOD);
 
+            var subroutineType = currentToken.getType();
             if (currentToken.getType() == TokenType.METHOD) {
                 symTable.define("this", className, SymbolTable.Kind.ARG);
             }
             expectPeek(TokenType.VOID, TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
             expectPeek(TokenType.IDENT);
+
+            var functionName = className + "." + currentToken.getLexeme();
             expectPeek(TokenType.LPAREN);
             parseParameterList();
             expectPeek(TokenType.RPAREN);
-            parseSubRoutineBody();
+            parseSubRoutineBody(functionName, subroutineType);
             printNonTerminal("/subroutineDec");
         }
     }
 
-    @Override
     public void parseParameterList() {
         printNonTerminal("parameterList");
 
@@ -414,7 +405,6 @@ public class Parser implements SyntacticElements {
         printNonTerminal("/parameterList");
     }
 
-    @Override
     public void parseClass() {
         printNonTerminal("class");
         expectPeek(TokenType.CLASS);
