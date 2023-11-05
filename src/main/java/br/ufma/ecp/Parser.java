@@ -46,6 +46,10 @@ public class Parser implements SyntacticElements {
                 }
             }
 
+            if (peekTokenIs(TokenType.THIS)) {
+                vmWriter.writePush(VMWriter.Segment.POINTER, 0);
+            }
+
             if (peekTokenIs(TokenType.IDENT)) {
                 expectPeek(TokenType.IDENT);
 
@@ -68,6 +72,11 @@ public class Parser implements SyntacticElements {
 
         if (TokenType.isBoolean(peekToken.getType())) {
             expectPeek(TokenType.FALSE, TokenType.NULL, TokenType.TRUE);
+
+            vmWriter.writePush(VMWriter.Segment.CONST, 0);
+            if (currentToken.getType() == TokenType.TRUE)
+                vmWriter.writeArithmetic(VMWriter.Command.NOT);
+
             printNonTerminal("/term");
             return;
         }
