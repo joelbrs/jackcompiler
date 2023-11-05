@@ -10,6 +10,7 @@ public class Parser implements SyntacticElements {
     private Token currentToken;
     private Token peekToken;
     private final StringBuilder xmlOutput = new StringBuilder();
+    private final VMWriter vmWriter = new VMWriter();
 
     public Parser (byte[] input) {
         scan = new Scanner(input);
@@ -339,5 +340,9 @@ public class Parser implements SyntacticElements {
             report(token.getLine(), " at '" + token.getLexeme() + "'", message);
         }
         return new ParseError();
+    }
+
+    public String VMOutput() {
+        return vmWriter.vmOutput();
     }
 }
