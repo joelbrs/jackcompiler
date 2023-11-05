@@ -65,7 +65,9 @@ public class Parser {
                         parseExpression();
                         expectPeek(TokenType.RBRACKET);
                     } else {
-                        vmWriter.writePush(kind2Segment(sym.kind()), sym.index());
+                        if (sym != null && kind2Segment(sym.kind()) != null) {
+                            vmWriter.writePush(kind2Segment(sym.kind()), sym.index());
+                        }
                     }
                 }
 
@@ -188,11 +190,26 @@ public class Parser {
     }
 
     public void parseLet() {
+        var isArray = false;
+
         printNonTerminal("letStatement");
         expectPeek(TokenType.LET);
         expectPeek(TokenType.IDENT);
+
+        var symbol = symTable.resolve(currentToken.getLexeme());
+        if (peekTokenIs(TokenType.LBRACKET)) {
+            expectPeek(TokenType.LBRACKET);
+            parseExpression();
+            expectPeek(TokenType.RBRACKET);
+
+            isArray = true;
+        }
         expectPeek(TokenType.EQ);
         parseExpression();
+
+        if (!isArray && symbol != null && kind2Segment(symbol.kind()) != null) {
+            vmWriter.writePop(kind2Segment(symbol.kind()), symbol.index());
+        }
         expectPeek(TokenType.SEMICOLON);
         printNonTerminal("/letStatement");
     }
