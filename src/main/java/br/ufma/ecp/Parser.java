@@ -29,6 +29,10 @@ public class Parser {
         return "+=*/<>-~&|.".contains(op);
     }
 
+    public void parse() {
+        parseClass();
+    }
+
     public void parseTerm() {
         printNonTerminal("term");
         boolean currentIsUnaryOrRParen = currentToken != null && (currentTokenIs(TokenType.NOT) || currentTokenIs(TokenType.MINUS) || currentTokenIs(TokenType.RPAREN));
