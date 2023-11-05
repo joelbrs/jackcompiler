@@ -6,11 +6,13 @@ import br.ufma.ecp.token.TokenType;
 
 public class Parser implements SyntacticElements {
     private static class ParseError extends RuntimeException {};
+    private final StringBuilder xmlOutput = new StringBuilder();
+    private final VMWriter vmWriter = new VMWriter();
+    private final SymbolTable symTable = new SymbolTable();
     private final Scanner scan;
     private Token currentToken;
     private Token peekToken;
-    private final StringBuilder xmlOutput = new StringBuilder();
-    private final VMWriter vmWriter = new VMWriter();
+    private String className;
     private int ifLabelNum = 0 ;
     private int whileLabelNum = 0;
 
@@ -291,12 +293,23 @@ public class Parser implements SyntacticElements {
         while (peekTokenIs(TokenType.STATIC) || peekTokenIs(TokenType.FIELD)) {
             printNonTerminal("classVarDec");
             expectPeek(TokenType.STATIC, TokenType.FIELD);
+            SymbolTable.Kind kind = SymbolTable.Kind.STATIC;
+            if (currentTokenIs(TokenType.FIELD)) {
+                kind = SymbolTable.Kind.FIELD;
+            }
             expectPeek(TokenType.INT, TokenType.BOOLEAN, TokenType.CHAR, TokenType.IDENT);
+
+            String type = currentToken.getLexeme();
             expectPeek(TokenType.IDENT);
+            String name = currentToken.getLexeme();
+            symTable.define(name, type, kind);
 
             while (peekTokenIs(TokenType.COMMA)) {
                 expectPeek(TokenType.COMMA);
                 expectPeek(TokenType.IDENT);
+
+                name = currentToken.getLexeme();
+                symTable.define(name, type, kind);
             }
 
             expectPeek(TokenType.SEMICOLON);
@@ -309,8 +322,28 @@ public class Parser implements SyntacticElements {
         while (peekTokenIs(TokenType.VAR)) {
             printNonTerminal("varDec");
             expectPeek(TokenType.VAR);
+
+            SymbolTable.Kind kind = SymbolTable.Kind.VAR;
+
             expectPeek(TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
+            String type = currentToken.getLexeme();
+
             expectPeek(TokenType.IDENT);
+
+            //TODO: verificar
+            String name = currentToken.getLexeme();
+            if (currentToken.getLexeme().equals(type)) {
+                symTable.define(name, type, kind);
+            }
+
+            while (peekTokenIs(TokenType.COMMA)) {
+                expectPeek(TokenType.COMMA);
+                expectPeek(TokenType.IDENT);
+
+                name = currentToken.getLexeme();
+                symTable.define(name, type, kind);
+            }
+
             expectPeek(TokenType.SEMICOLON);
             printNonTerminal("/varDec");
         }
@@ -328,11 +361,19 @@ public class Parser implements SyntacticElements {
 
     @Override
     public void parseSubRoutineDec() {
-        ifLabelNum = 0;
-        whileLabelNum = 0;
         while (peekTokenIs(TokenType.CONSTRUCTOR) || peekTokenIs(TokenType.FUNCTION) || peekTokenIs(TokenType.METHOD)) {
             printNonTerminal("subroutineDec");
+
+            ifLabelNum = 0;
+            whileLabelNum = 0;
+
+            symTable.startSubroutine();
+
             expectPeek(TokenType.CONSTRUCTOR, TokenType.FUNCTION, TokenType.METHOD);
+
+            if (currentToken.getType() == TokenType.METHOD) {
+                symTable.define("this", className, SymbolTable.Kind.ARG);
+            }
             expectPeek(TokenType.VOID, TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
             expectPeek(TokenType.IDENT);
             expectPeek(TokenType.LPAREN);
@@ -346,14 +387,27 @@ public class Parser implements SyntacticElements {
     @Override
     public void parseParameterList() {
         printNonTerminal("parameterList");
-        if (peekTokenIs(TokenType.INT) || peekTokenIs(TokenType.CHAR) || peekTokenIs(TokenType.BOOLEAN) || peekTokenIs(TokenType.IDENT)) {
+
+        if (!peekTokenIs(TokenType.RPAREN)) {
+            SymbolTable.Kind kind = SymbolTable.Kind.ARG;
+
             expectPeek(TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
+            String type = currentToken.getLexeme();
+
             expectPeek(TokenType.IDENT);
+            String name = currentToken.getLexeme();
+            symTable.define(name, type, kind);
 
             while (peekTokenIs(TokenType.COMMA)) {
                 expectPeek(TokenType.COMMA);
                 expectPeek(TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
+                type = currentToken.getLexeme();
+
                 expectPeek(TokenType.IDENT);
+
+                name = currentToken.getLexeme();
+                symTable.define(name, type, kind);
+
             }
         }
 
@@ -365,6 +419,7 @@ public class Parser implements SyntacticElements {
         printNonTerminal("class");
         expectPeek(TokenType.CLASS);
         expectPeek(TokenType.IDENT);
+        className = currentToken.getLexeme();
         expectPeek(TokenType.LBRACE);
         parseClassVarDec();
         parseSubRoutineDec();
