@@ -11,6 +11,8 @@ public class Parser implements SyntacticElements {
     private Token peekToken;
     private final StringBuilder xmlOutput = new StringBuilder();
     private final VMWriter vmWriter = new VMWriter();
+    private int ifLabelNum = 0 ;
+    private int whileLabelNum = 0;
 
     public Parser (byte[] input) {
         scan = new Scanner(input);
@@ -193,13 +195,39 @@ public class Parser implements SyntacticElements {
     @Override
     public void parseIf() {
         printNonTerminal("ifStatement");
+
+        var labelTrue = "IF_TRUE" + ifLabelNum;
+        var labelFalse = "IF_FALSE" + ifLabelNum;
+        var labelEnd = "IF_END" + ifLabelNum;
+
+        ifLabelNum++;
+
         expectPeek(TokenType.IF);
         expectPeek(TokenType.LPAREN);
         parseExpression();
         expectPeek(TokenType.RPAREN);
+
+        vmWriter.writeIf(labelTrue);
+        vmWriter.writeGoto(labelFalse);
+        vmWriter.writeLabel(labelTrue);
+
         expectPeek(TokenType.LBRACE);
         parseStatements();
         expectPeek(TokenType.RBRACE);
+        if (peekTokenIs(TokenType.ELSE)) {
+            vmWriter.writeGoto(labelEnd);
+        }
+
+        vmWriter.writeLabel(labelFalse);
+
+        if (peekTokenIs(TokenType.ELSE)) {
+            expectPeek(TokenType.ELSE);
+            expectPeek(TokenType.LBRACE);
+            parseStatements();
+            expectPeek(TokenType.RBRACE);
+            vmWriter.writeLabel(labelEnd);
+        }
+
         printNonTerminal("/ifStatement");
     }
 
@@ -285,6 +313,8 @@ public class Parser implements SyntacticElements {
 
     @Override
     public void parseSubRoutineDec() {
+        ifLabelNum = 0;
+        whileLabelNum = 0;
         while (peekTokenIs(TokenType.CONSTRUCTOR) || peekTokenIs(TokenType.FUNCTION) || peekTokenIs(TokenType.METHOD)) {
             printNonTerminal("subroutineDec");
             expectPeek(TokenType.CONSTRUCTOR, TokenType.FUNCTION, TokenType.METHOD);
