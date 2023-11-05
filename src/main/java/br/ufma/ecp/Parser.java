@@ -55,8 +55,18 @@ public class Parser {
             if (peekTokenIs(TokenType.IDENT)) {
                 expectPeek(TokenType.IDENT);
 
+                SymbolTable.Symbol sym = symTable.resolve(currentToken.getLexeme());
+
                 if (peekTokenIs(TokenType.LPAREN) || peekTokenIs(TokenType.DOT)) {
                     parseSubRoutineCall();
+                } else {
+                    if (peekTokenIs(TokenType.LBRACKET)) {
+                        expectPeek(TokenType.LBRACKET);
+                        parseExpression();
+                        expectPeek(TokenType.RBRACKET);
+                    } else {
+                        vmWriter.writePush(kind2Segment(sym.kind()), sym.index());
+                    }
                 }
 
                 printNonTerminal("/term");
@@ -497,6 +507,18 @@ public class Parser {
             return VMWriter.Command.AND;
         if (type == TokenType.OR)
             return VMWriter.Command.OR;
+        return null;
+    }
+
+    private VMWriter.Segment kind2Segment(SymbolTable.Kind kind) {
+        if (kind == SymbolTable.Kind.STATIC)
+            return VMWriter.Segment.STATIC;
+        if (kind == SymbolTable.Kind.FIELD)
+            return VMWriter.Segment.THIS;
+        if (kind == SymbolTable.Kind.VAR)
+            return VMWriter.Segment.LOCAL;
+        if (kind == SymbolTable.Kind.ARG)
+            return VMWriter.Segment.ARG;
         return null;
     }
 }
