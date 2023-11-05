@@ -4,6 +4,9 @@ import br.ufma.ecp.interfaces.SyntacticElements;
 import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
 
+import static br.ufma.ecp.token.TokenType.ASTERISK;
+import static br.ufma.ecp.token.TokenType.SLASH;
+
 public class Parser implements SyntacticElements {
     private static class ParseError extends RuntimeException {};
     private final Scanner scan;
@@ -145,8 +148,10 @@ public class Parser implements SyntacticElements {
         parseTerm();
 
         while (isOperator(peekToken.getLexeme())) {
+            var ope = peekToken.getType();
             expectPeek(peekToken.getType());
             parseTerm();
+            compileOperators(ope);
         }
         printNonTerminal("/expression");
     }
@@ -348,5 +353,34 @@ public class Parser implements SyntacticElements {
 
     public String VMOutput() {
         return vmWriter.vmOutput();
+    }
+
+    public void compileOperators(TokenType type) {
+
+        if (type == TokenType.ASTERISK) {
+            vmWriter.writeCall("Math.multiply", 2);
+        } else if (type == TokenType.SLASH) {
+            vmWriter.writeCall("Math.divide", 2);
+        } else {
+            vmWriter.writeArithmetic(typeOperator(type));
+        }
+    }
+
+    private VMWriter.Command typeOperator(TokenType type) {
+        if (type == TokenType.PLUS)
+            return VMWriter.Command.ADD;
+        if (type == TokenType.MINUS)
+            return VMWriter.Command.SUB;
+        if (type == TokenType.LT)
+            return VMWriter.Command.LT;
+        if (type == TokenType.GT)
+            return VMWriter.Command.GT;
+        if (type == TokenType.EQ)
+            return VMWriter.Command.EQ;
+        if (type == TokenType.AND)
+            return VMWriter.Command.AND;
+        if (type == TokenType.OR)
+            return VMWriter.Command.OR;
+        return null;
     }
 }
