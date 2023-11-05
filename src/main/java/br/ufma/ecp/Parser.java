@@ -29,9 +29,13 @@ public class Parser implements SyntacticElements {
     @Override
     public void parseTerm() {
         printNonTerminal("term");
-        boolean currentIsUnaryOrRParen = currentTokenIs(TokenType.NOT) || currentTokenIs(TokenType.MINUS) || currentTokenIs(TokenType.RPAREN);
+        boolean currentIsUnaryOrRParen = currentToken != null && (currentTokenIs(TokenType.NOT) || currentTokenIs(TokenType.MINUS) || currentTokenIs(TokenType.RPAREN));
 
         if (TokenType.isLiteral(peekToken.getType())) {
+            if (peekTokenIs(TokenType.NUMBER)) {
+                vmWriter.writePush(VMWriter.Segment.CONST, Integer.parseInt(peekToken.getLexeme()));
+            }
+
             if (peekTokenIs(TokenType.IDENT)) {
                 expectPeek(TokenType.IDENT);
 
