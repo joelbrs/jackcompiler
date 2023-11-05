@@ -95,7 +95,14 @@ public class Parser implements SyntacticElements {
 
         if (peekTokenIs(TokenType.NOT) || peekTokenIs(TokenType.MINUS)) {
             expectPeek(peekToken.getType());
+
+            var op = currentToken.getType();
             parseTerm();
+            if (op == TokenType.MINUS) {
+                vmWriter.writeArithmetic(VMWriter.Command.NEG);
+                return;
+            }
+            vmWriter.writeArithmetic(VMWriter.Command.NOT);
             return;
         }
 
