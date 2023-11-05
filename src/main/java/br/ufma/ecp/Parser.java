@@ -63,7 +63,15 @@ public class Parser {
                     if (peekTokenIs(TokenType.LBRACKET)) {
                         expectPeek(TokenType.LBRACKET);
                         parseExpression();
+
+                        if (sym != null && kind2Segment(sym.kind())!= null) {
+                            vmWriter.writePush(kind2Segment(sym.kind()), sym.index());
+                        }
+                        vmWriter.writeArithmetic(VMWriter.Command.ADD);
                         expectPeek(TokenType.RBRACKET);
+
+                        vmWriter.writePop(VMWriter.Segment.POINTER, 1); // pop address pointer into pointer 1
+                        vmWriter.writePush(VMWriter.Segment.THAT, 0);
                     } else {
                         if (sym != null && kind2Segment(sym.kind()) != null) {
                             vmWriter.writePush(kind2Segment(sym.kind()), sym.index());
@@ -200,6 +208,9 @@ public class Parser {
         if (peekTokenIs(TokenType.LBRACKET)) {
             expectPeek(TokenType.LBRACKET);
             parseExpression();
+
+            vmWriter.writePush(kind2Segment(symbol.kind()), symbol.index());
+            vmWriter.writeArithmetic(VMWriter.Command.ADD);
             expectPeek(TokenType.RBRACKET);
 
             isArray = true;
@@ -207,8 +218,15 @@ public class Parser {
         expectPeek(TokenType.EQ);
         parseExpression();
 
-        if (!isArray && symbol != null && kind2Segment(symbol.kind()) != null) {
-            vmWriter.writePop(kind2Segment(symbol.kind()), symbol.index());
+        if (isArray) {
+            vmWriter.writePop(VMWriter.Segment.TEMP, 0);    // push result back onto stack
+            vmWriter.writePop(VMWriter.Segment.POINTER, 1); // pop address pointer into pointer 1
+            vmWriter.writePush(VMWriter.Segment.TEMP, 0);   // push result back onto stack
+            vmWriter.writePop(VMWriter.Segment.THAT, 0);
+        } else {
+            if (symbol != null && kind2Segment(symbol.kind()) != null) {
+                vmWriter.writePop(kind2Segment(symbol.kind()), symbol.index());
+            }
         }
         expectPeek(TokenType.SEMICOLON);
         printNonTerminal("/letStatement");
