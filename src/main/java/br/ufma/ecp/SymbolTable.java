@@ -38,7 +38,7 @@ public class SymbolTable {
 
     void define(String name, String type, Kind kind) {
         Map<String,Symbol> scopeTable = scope(kind);
-        if (scopeTable.get(name) != null) throw new RuntimeException ("variable already defined");
+        if (scopeTable.get(name) != null) return;
 
         Symbol s = new Symbol(name, type, kind, varCount(kind));
         scopeTable.put(name, s);
