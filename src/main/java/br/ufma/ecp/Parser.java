@@ -132,30 +132,54 @@ public class Parser {
     }
 
     public void parseSubRoutineCall() {
+        var nArgs = 0;
+
+        var ident = currentToken.getLexeme();
+        var symbol = symTable.resolve(ident);
+        var functionName = ident + ".";
+
         if(peekTokenIs(TokenType.LPAREN)) {
             expectPeek(TokenType.LPAREN);
-            parseExpressionList();
+            vmWriter.writePush(VMWriter.Segment.POINTER, 0);
+            nArgs = parseExpressionList() + 1;
             expectPeek(TokenType.RPAREN);
+            functionName = className + "." + ident;
+            vmWriter.writeCall(functionName, nArgs);
             return;
         }
 
         expectPeek(TokenType.DOT);
         expectPeek(TokenType.IDENT);
+
+        if (symbol != null) {
+            functionName = symbol.type() + "." + currentToken.getLexeme();
+            vmWriter.writePush(kind2Segment(symbol.kind()), symbol.index());
+            nArgs = 1;
+        } else {
+            functionName += currentToken.getLexeme();
+        }
+
         expectPeek(TokenType.LPAREN);
-        parseExpressionList();
+        nArgs += parseExpressionList();
         expectPeek(TokenType.RPAREN);
+        vmWriter.writeCall(functionName, nArgs);
     }
 
-    public void parseExpressionList() {
+    public int parseExpressionList() {
         printNonTerminal("expressionList");
+        var nArgs = 0;
+
         if (!peekTokenIs(TokenType.RPAREN)) {
             parseExpression();
+            nArgs = 1;
         }
         while (peekTokenIs(TokenType.COMMA)) {
             expectPeek(TokenType.COMMA);
             parseExpression();
+            nArgs++;
         }
         printNonTerminal("/expressionList");
+        return nArgs;
     }
 
     public void parseStatements() {
